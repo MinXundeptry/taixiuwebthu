@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>Tài Xỉu Auto</title>
+<style>
+    body {
+        font-family: sans-serif;
+        text-align: center;
+        padding: 30px;
+        background: #0f0f1a;
+        color: white;
+    }
+
+    h1 { margin-bottom: 20px; }
+
+    .bet-box {
+        display: flex;
+        justify-content: center;
+        gap: 30px;
+        margin-bottom: 20px;
+    }
+
+    .side {
+        width: 150px;
+        padding: 15px;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: 0.2s;
+        border: 3px solid transparent;
+    }
+
+    .tai { background: #ff4444; }
+    .xiu { background: #4466ff; }
+
+    .active {
+        border-color: yellow;
+        transform: scale(1.05);
+    }
+
+    .dice-box {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        margin: 30px 0;
+    }
+
+    .dice {
+        width: 80px;
+        height: 80px;
+        font-size: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: white;
+        border-radius: 10px;
+        color: black;
+    }
+
+    .rolling {
+        animation: spin 0.3s infinite;
+    }
+
+    @keyframes spin {
+        from { transform: rotate(0deg); }
+        to   { transform: rotate(360deg); }
+    }
+
+    button {
+        padding: 12px 25px;
+        font-size: 18px;
+        margin-top: 10px;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        background: #00cc66;
+        color: white;
+    }
+
+    .timer {
+        margin-top: 20px;
+        font-size: 22px;
+        font-weight: bold;
+        color: #00ffcc;
+    }
+
+    .result {
+        margin-top: 20px;
+        font-size: 22px;
+        font-weight: bold;
+    }
+</style>
+</head>
+<body>
+
+<h1>Bàn chơi Tài Xỉu Auto</h1>
+
+<div class="bet-box">
+    <div class="side tai" id="betTai" onclick="chooseBet('TÀI')">Chọn TÀI</div>
+    <div class="side xiu" id="betXiu" onclick="chooseBet('XỈU')">Chọn XỈU</div>
+</div>
+
+<h3>Bạn chọn: <span id="chosen">Chưa chọn</span></h3>
+
+<div class="dice-box">
+    <div class="dice" id="d1">🎲</div>
+    <div class="dice" id="d2">🎲</div>
+    <div class="dice" id="d3">🎲</div>
+</div>
+
+<button onclick="manualPlay()">Lắc xúc xắc</button>
+
+<div class="timer" id="timer">Còn 30 giây</div>
+
+<div class="result" id="result"></div>
+
+<script>
+let playerBet = null;
+let timeLeft = 30;
+let countdown;
+
+// chọn tài xỉu
+function chooseBet(type) {
+    playerBet = type;
+    document.getElementById("chosen").textContent = type;
+
+    document.getElementById("betTai").classList.remove("active");
+    document.getElementById("betXiu").classList.remove("active");
+
+    if (type === "TÀI") document.getElementById("betTai").classList.add("active");
+    else document.getElementById("betXiu").classList.add("active");
+}
+
+// chạy timer liên tục
+function startTimer() {
+    countdown = setInterval(() => {
+        timeLeft--;
+        document.getElementById("timer").textContent = "Còn " + timeLeft + " giây";
+
+        if (timeLeft <= 0) {
+            play(true); // auto play
+        }
+    }, 1000);
+}
+
+// reset timer sau khi lắc
+function resetTimer() {
+    clearInterval(countdown);
+    timeLeft = 30;
+    document.getElementById("timer").textContent = "Còn 30 giây";
+    startTimer();
+}
+
+// lắc thủ công
+function manualPlay() {
+    play(false);
+}
+
+// hàm chính
+function play(isAuto) {
+    if (!playerBet) {
+        alert("Bạn phải chọn Tài hoặc Xỉu trước!");
+        return resetTimer();
+    }
+
+    let d1 = document.getElementById("d1");
+    let d2 = document.getElementById("d2");
+    let d3 = document.getElementById("d3");
+    let result = document.getElementById("result");
+
+    d1.classList.add("rolling");
+    d2.classList.add("rolling");
+    d3.classList.add("rolling");
+
+    result.textContent = isAuto ? "Hết giờ, đang tự lắc..." : "Đang lắc...";
+
+    clearInterval(countdown);
+
+    setTimeout(() => {
+        let a = Math.floor(Math.random() * 6) + 1;
+        let b = Math.floor(Math.random() * 6) + 1;
+        let c = Math.floor(Math.random() * 6) + 1;
+
+        d1.classList.remove("rolling");
+        d2.classList.remove("rolling");
+        d3.classList.remove("rolling");
+
+        d1.textContent = a;
+        d2.textContent = b;
+        d3.textContent = c;
+
+        let total = a + b + c;
+        let status = (total >= 11 && total <= 17) ? "TÀI" : "XỈU";
+        let win = (playerBet === status) ? "Bạn THẮNG 🎉" : "Bạn THUA 😢";
+
+        result.innerHTML =
+            `Tổng: <b>${total}</b> → ${status}<br>${win}<br><i>${isAuto ? '(Lắc tự động)' : ''}</i>`;
+
+        resetTimer();
+    }, 1000);
+}
+
+// khởi động timer khi load trang
+startTimer();
+</script>
+
+</body>
+</html>
